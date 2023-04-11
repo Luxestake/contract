@@ -312,7 +312,7 @@ contract EthStakePool is
         address tokenOwner = ownerOf(_nftId);
         require(msg.sender == tokenOwner, "wrong owner");
         require(round.rewardAmount > 0, "no rewards");
-        require(round.rewardsClaimedById[_nftId] == false, "already claimed");
+        require(!round.rewardsClaimedById[_nftId], "already claimed");
         uint256 rewards = round.rewardAmount;
         uint256 share = _getShare(_nftId, rewards, round.totalDeposits);
         round.rewardsClaimedById[_nftId] = true;
@@ -345,7 +345,7 @@ contract EthStakePool is
         require(msg.sender == tokenOwner, "wrong owner");
         for (uint256 index = 0; index < currentRewardRoundIndex; index++) {
             RewardRound storage round = rounds[index];
-            if (round.rewardsClaimedById[_nftId] == false) {
+            if (!round.rewardsClaimedById[_nftId]) {
                 _claimRewards(index, _nftId);
             }
         }
@@ -385,7 +385,7 @@ contract EthStakePool is
         returns (uint256)
     {
         RewardRound storage round = rounds[_roundId];
-        if (round.rewardsClaimedById[_nftId] == true) {
+        if (round.rewardsClaimedById[_nftId]) {
             return 0;
         }
         uint256 rewards = round.rewardAmount;
@@ -458,7 +458,7 @@ contract EthStakePool is
         uint256 totalrewards;
         for (uint256 index = 0; index < currentRewardRoundIndex; index++) {
             RewardRound storage round = rounds[index];
-            if (round.rewardsClaimedById[_nftId] == false) {
+            if (!round.rewardsClaimedById[_nftId]) {
                 totalrewards =
                     totalrewards +
                     getClaimableRewards(index, _nftId);
