@@ -665,16 +665,15 @@ contract EthStakePool is
             // prepare the lookup table
             let tablePtr := add(table, 1)
 
-            // input ptr
-            let dataPtr := data
-            let endPtr := add(dataPtr, mload(data))
 
             // result ptr, jump over length
             let resultPtr := add(result, 32)
 
             // run over the input, 3 bytes at a time
             for {
-
+                // input ptr
+                let dataPtr := data
+                let endPtr := add(dataPtr, mload(data))
             } lt(dataPtr, endPtr) {
 
             } {
