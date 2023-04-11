@@ -101,6 +101,7 @@ contract EthStakePool is
         nftFee = 200;
         setDefaultRoyalty(_owner, nftFee);
         transferOwnership(_owner);
+        require(_operationAddr != address(0), "zero address");
         operationAddr = _operationAddr;
         currentStatus = Status.deposit;
         DEPOSIT_CONTRACT = IDeposit(_eth2StakeAddr);
@@ -252,7 +253,7 @@ contract EthStakePool is
             msg.value >= miniumDepositAmount,
             "deposit amount is not enough"
         );
-        require(totalDeposits <= 32 ether, "pool full");
+        require(totalDeposits < 32 ether, "pool full");
         uint256 id = tokenIds.current();
         uint256 poolRequired = ((32 ether - totalDeposits) *
             (10000 + feePercent)) / 10000;
@@ -769,6 +770,7 @@ contract EthStakePool is
         external
         onlyOwner
     {
+        require(_newOperationAddr != address(0), "zero address");
         operationAddr = _newOperationAddr;
     }
 

@@ -20,7 +20,12 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: true
+      allowUnlimitedContractSize: true,
+      accounts: {
+        mnemonic: 'test test test test test test test test test test test test',
+        initialIndex: 0,
+      },
+
     },
     localhost: {
       allowUnlimitedContractSize: true

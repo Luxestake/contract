@@ -1,7 +1,7 @@
 import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import {
   EthStakePool,
   EthStakePoolFactory,
@@ -13,14 +13,14 @@ const log = (message?, ...optionalParams ) => { if (log_on) console.log(message,
 let withdrawPrefix = "0x010000000000000000000000";
 var fakeData = {
   pubkeys:
-    "0xb325ccf371b5b71cc48e202c9a19848d212d27ae9902ac796078ac41644503b5f5c75fe0f0b1c97b2684b7632e685e41",
-  withdrawal_credentials: "",
+    "0xaa373f716f2f1e7ce7042f3d24b71676f719adc0f666543e7f35155e15844e5a592d83459cc168e689d8ae9137868cef",
+  withdrawal_credentials: "0x010000000000000000000000bce0f9c20ad0a745d5a1d924fa3f545f502c3991",
 
   signatures:
-    "0x84a2c9b617a5168ccb274a83356e5f6d4a55e23a959787b068bf063ff3ca8f60a24900dc2b9fd7f5a6023f1715638ba416bfe2ec0c715dff6bd4a948a7ea576f0124352c2d8a1c130c5316d97762144dcc018e5afb85aefd3d1f91af56cf3fe6",
+    "0xb75e6c67494ee58df336cccfe77e7f6b86dfd28f233168ab5c379c3d0de6f8cca944744133f927afba51ad4cfa35da100f7c2e903add979a986d486e71a396a5afc095250ae11586c95564d2476d404b163884dd429689a12b1a39928275d94a",
 
   deposit_data_root:
-    "0xe16e8c180a5376b7c4bf8c7ab530f1d51f78102646e7be1c1a1e63770a9d84cb",
+    "0x498dbfe250fe169efbc93fe75c2246a53f55ff55140eae32724d1e3247c23cee",
 };
 
 describe("Stake Pool Testcase", function () {
@@ -29,16 +29,29 @@ describe("Stake Pool Testcase", function () {
     let ethStakePool: EthStakePool = await EthStakePool.deploy();
     const [owner, addr1, addr2, addr3] = await ethers.getSigners();
 
-    let DepositContract = await ethers.getContractFactory("DepositContract");
-    let depositContract: DepositContract = await DepositContract.deploy();
 
+    const beaconContractDeployer = "0xb20a608c624ca5003905aa834de7156c68b2e1d0"
+    await network.provider.send("hardhat_setBalance", [
+      beaconContractDeployer,
+      "0x10000000000000000000000000000000000",
+    ]);
+    await network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [beaconContractDeployer],
+    });
+    const beaconSigner = await ethers.getSigner(beaconContractDeployer)
+    let DepositContract = await ethers.getContractFactory("DepositContract");
+    let depositContract: DepositContract = await DepositContract.connect(beaconSigner).deploy();
+    console.log(`depositContract.address`, depositContract.address)
+    // expect deposit contract equal to the address in eth2 spec
+    // https://etherscan.io/address/0x00000000219ab540356cbb839cbe05303d7705fa
+    expect(await depositContract.address).to.equal("0x00000000219ab540356cBB839Cbe05303d7705Fa");
     let EthStakePoolFactory = await ethers.getContractFactory(
       "EthStakePoolFactory"
     );
     let ethStakePoolFactory: EthStakePoolFactory =
       await EthStakePoolFactory.deploy(
-        ethStakePool.address,
-        depositContract.address
+        ethStakePool.address
       );
     return { ethStakePool, ethStakePoolFactory, owner, addr1, addr2, addr3 };
   }
@@ -52,7 +65,7 @@ describe("Stake Pool Testcase", function () {
         addr1.address,
         ethers.utils.parseEther("0.1").toString()
       );
-      let newPoolAddr = await ethStakePoolFactory.getPoolByIndex(0);
+      let newPoolAddr = await ethStakePoolFactory.stakingPools(0);
 
       const ethStakePool = await ethers.getContractAt(
         "EthStakePool",
@@ -92,7 +105,7 @@ describe("Stake Pool Testcase", function () {
         addr1.address,
         ethers.utils.parseEther("0.1").toString()
       );
-      let newPoolAddr = await ethStakePoolFactory.getPoolByIndex(0);
+      let newPoolAddr = await ethStakePoolFactory.stakingPools(0);
 
       const ethStakePool = await ethers.getContractAt(
         "EthStakePool",
@@ -133,7 +146,7 @@ describe("Stake Pool Testcase", function () {
         addr1.address,
         ethers.utils.parseEther("0.1").toString()
       );
-      let newPoolAddr = await ethStakePoolFactory.getPoolByIndex(0);
+      let newPoolAddr = await ethStakePoolFactory.stakingPools(0);
 
       const ethStakePool = await ethers.getContractAt(
         "EthStakePool",
@@ -180,7 +193,7 @@ describe("Stake Pool Testcase", function () {
         addr1.address,
         ethers.utils.parseEther("0.1").toString()
       );
-      let newPoolAddr = await ethStakePoolFactory.getPoolByIndex(0);
+      let newPoolAddr = await ethStakePoolFactory.stakingPools(0);
 
       const ethStakePool = await ethers.getContractAt(
         "EthStakePool",
@@ -207,7 +220,7 @@ describe("Stake Pool Testcase", function () {
         addr1.address,
         ethers.utils.parseEther("0.1").toString()
       );
-      let newPoolAddr = await ethStakePoolFactory.getPoolByIndex(0);
+      let newPoolAddr = await ethStakePoolFactory.stakingPools(0);
 
       const ethStakePool = await ethers.getContractAt(
         "EthStakePool",

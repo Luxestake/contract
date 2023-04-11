@@ -14,7 +14,7 @@ contract EthStakePoolFactory is Ownable {
     address[] public stakingPools;
     address ethStakePoolImpAddress;
 
-    address public deposit_contract_address =
+    address public constant deposit_contract_address =
         0x00000000219ab540356cBB839Cbe05303d7705Fa;
 
     event Create(
@@ -25,9 +25,9 @@ contract EthStakePoolFactory is Ownable {
         uint256 miniumDepositAmount
     );
 
-    constructor(address _ethStakePoolImpAddress, address _deposit_contract_address) {
+    constructor(address _ethStakePoolImpAddress) {
+        require(_ethStakePoolImpAddress != address(0), "zero address");
         ethStakePoolImpAddress = _ethStakePoolImpAddress;
-        deposit_contract_address = _deposit_contract_address;
     }
 
     /**
@@ -39,6 +39,7 @@ contract EthStakePoolFactory is Ownable {
         public
         onlyOwner
     {
+        require(_newethStakePoolImpAddress != address(0), "zero address");
         ethStakePoolImpAddress = _newethStakePoolImpAddress;
     }
 
@@ -80,10 +81,6 @@ contract EthStakePoolFactory is Ownable {
         stakingPools.push(newPool);
         return newPool;
     }
-    function getPoolByIndex(uint256 _index) public view returns (address) {
-        return stakingPools[_index];
-    }
-
     function deploy(
         address _logic,
         bytes memory _data,
